@@ -1,0 +1,1042 @@
+{% extends "base.html" %}
+{% block public_content %}
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  .landing {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    color: #1a1a2e;
+    font-family: 'Space Grotesk', sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* ════════════════════════════════
+     KEYFRAMES
+  ════════════════════════════════ */
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-28px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeInLeft {
+    from { opacity: 0; transform: translateX(-48px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes fadeInRight {
+    from { opacity: 0; transform: translateX(48px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(36px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-14px); }
+  }
+  @keyframes floatSlow {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50%       { transform: translateY(-20px) rotate(3deg); }
+  }
+  @keyframes blob {
+    0%, 100% { border-radius: 60% 40% 70% 30% / 50% 60% 40% 70%; }
+    25%       { border-radius: 40% 60% 30% 70% / 60% 40% 70% 30%; }
+    50%       { border-radius: 70% 30% 60% 40% / 30% 70% 50% 60%; }
+    75%       { border-radius: 30% 70% 40% 60% / 70% 30% 60% 40%; }
+  }
+  @keyframes scaleIn {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+  }
+  @keyframes pulse-dot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50%       { transform: scale(1.6); opacity: .6; }
+  }
+  @keyframes shimmer {
+    0%   { background-position: -600px 0; }
+    100% { background-position: 600px 0; }
+  }
+  @keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+  @keyframes typing {
+    from { width: 0; }
+    to   { width: 100%; }
+  }
+  @keyframes blink {
+    0%, 100% { border-color: transparent; }
+    50%       { border-color: #2ecc71; }
+  }
+  @keyframes orbit {
+    from { transform: rotate(0deg) translateX(90px) rotate(0deg); }
+    to   { transform: rotate(360deg) translateX(90px) rotate(-360deg); }
+  }
+  @keyframes orbit2 {
+    from { transform: rotate(120deg) translateX(70px) rotate(-120deg); }
+    to   { transform: rotate(480deg) translateX(70px) rotate(-480deg); }
+  }
+  @keyframes orbit3 {
+    from { transform: rotate(240deg) translateX(110px) rotate(-240deg); }
+    to   { transform: rotate(600deg) translateX(110px) rotate(-600deg); }
+  }
+  @keyframes wave-text {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-8px); }
+  }
+  @keyframes gradient-shift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  @keyframes card-appear {
+    from { opacity: 0; transform: translateY(30px) scale(.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes ripple {
+    from { transform: scale(1); opacity: .6; }
+    to   { transform: scale(2.4); opacity: 0; }
+  }
+
+  /* ════════════════════════════════
+     NAVBAR
+  ════════════════════════════════ */
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 60px;
+    background: rgba(255,255,255,.96);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid #e8e8f0;
+    position: sticky; top: 0; z-index: 200;
+    animation: fadeInDown .5s ease both;
+  }
+  .nav-logo {
+    display: flex; align-items: center; gap: 12px;
+    text-decoration: none;
+    transition: transform .2s;
+  }
+  .nav-logo:hover { transform: scale(1.04); }
+  .nav-logo img { height: 48px; width: auto; }
+  .nav-links { display: flex; align-items: center; gap: 32px; }
+  .nav-links a {
+    color: #444; font-size: .9rem; font-weight: 500;
+    text-decoration: none; position: relative; padding-bottom: 2px;
+  }
+  .nav-links a::after {
+    content: ''; position: absolute; bottom: 0; left: 0;
+    width: 0; height: 2px; background: #2ecc71;
+    transition: width .25s ease;
+  }
+  .nav-links a:hover::after { width: 100%; }
+  .nav-links a:hover { color: #1a4fa0; }
+  .nav-actions { display: flex; align-items: center; gap: 12px; }
+  .btn-nav-login {
+    color: #444; font-size: .9rem; font-weight: 500;
+    padding: 9px 18px; border-radius: 8px;
+    text-decoration: none; border: 1px solid #ddd;
+    transition: all .2s;
+  }
+  .btn-nav-login:hover { background: #f4f4f8; color: #1a4fa0; border-color: #1a4fa0; }
+  .btn-nav-register {
+    background: #1a4fa0; color: white;
+    padding: 10px 22px; border-radius: 8px;
+    font-weight: 700; font-size: .9rem;
+    text-decoration: none;
+    transition: background .2s, transform .2s, box-shadow .2s;
+    position: relative; overflow: hidden;
+  }
+  .btn-nav-register::before {
+    content: '';
+    position: absolute; top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.25), transparent);
+    transition: left .4s;
+  }
+  .btn-nav-register:hover::before { left: 100%; }
+  .btn-nav-register:hover {
+    background: #2ecc71; color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(46,204,113,.4);
+  }
+
+  /* ════════════════════════════════
+     HERO
+  ════════════════════════════════ */
+  .hero {
+    display: flex; align-items: center;
+    padding: 80px 60px; gap: 60px;
+    background: linear-gradient(135deg, #f0faf7 0%, #f8f9ff 60%, #eef4ff 100%);
+    position: relative; overflow: hidden;
+    min-height: 88vh;
+  }
+
+  /* Blobs de fond */
+  .blob-1 {
+    position: absolute; top: -100px; right: -100px;
+    width: 500px; height: 500px;
+    background: rgba(46,204,113,.1);
+    animation: blob 9s ease-in-out infinite;
+    pointer-events: none; z-index: 0;
+  }
+  .blob-2 {
+    position: absolute; bottom: -80px; left: -80px;
+    width: 360px; height: 360px;
+    background: rgba(26,79,160,.08);
+    animation: blob 12s ease-in-out infinite reverse;
+    pointer-events: none; z-index: 0;
+  }
+  .blob-3 {
+    position: absolute; top: 40%; left: 40%;
+    width: 200px; height: 200px;
+    background: rgba(46,204,113,.05);
+    animation: blob 7s ease-in-out infinite 2s;
+    pointer-events: none; z-index: 0;
+  }
+
+  /* Orbites décoratives */
+  .orbit-container {
+    position: absolute; right: 100px; top: 50%;
+    transform: translateY(-50%);
+    width: 260px; height: 260px;
+    pointer-events: none; z-index: 0;
+    opacity: .15;
+  }
+  .orbit-ring {
+    position: absolute; inset: 0;
+    border: 1px dashed #1a4fa0;
+    border-radius: 50%;
+  }
+  .orbit-ring-2 {
+    position: absolute;
+    top: 15%; left: 15%; right: 15%; bottom: 15%;
+    border: 1px dashed #2ecc71;
+    border-radius: 50%;
+  }
+  .orbit-dot {
+    position: absolute; top: 50%; left: 50%;
+    width: 10px; height: 10px;
+    background: #1a4fa0; border-radius: 50%;
+    margin: -5px;
+    animation: orbit 6s linear infinite;
+  }
+  .orbit-dot-2 {
+    position: absolute; top: 50%; left: 50%;
+    width: 8px; height: 8px;
+    background: #2ecc71; border-radius: 50%;
+    margin: -4px;
+    animation: orbit2 4s linear infinite;
+  }
+  .orbit-dot-3 {
+    position: absolute; top: 50%; left: 50%;
+    width: 6px; height: 6px;
+    background: #1a4fa0; border-radius: 50%;
+    margin: -3px;
+    animation: orbit3 8s linear infinite;
+  }
+
+  .hero-text {
+    flex: 1; max-width: 540px; position: relative; z-index: 1;
+    animation: fadeInLeft .7s .1s ease both;
+  }
+
+  /* Typing tag */
+  .hero-tag {
+    display: inline-block;
+    background: rgba(46,204,113,.12);
+    border: 1px solid rgba(46,204,113,.35);
+    color: #1a9e5c;
+    border-radius: 99px;
+    padding: 6px 16px;
+    font-size: .78rem; font-weight: 700;
+    margin-bottom: 20px;
+    letter-spacing: .04em;
+    animation: fadeInLeft .5s .05s ease both;
+  }
+  .hero-tag .tag-dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    background: #2ecc71; border-radius: 50%;
+    margin-right: 6px;
+    animation: pulse-dot 1.4s ease-in-out infinite;
+  }
+
+  .hero-text h1 {
+    font-family: 'Sora', sans-serif;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight: 800; line-height: 1.15;
+    color: #1a1a2e; margin-bottom: 20px;
+  }
+
+  /* Chaque lettre du mot clé animée en vague */
+  .wave-word { display: inline-flex; }
+  .wave-word span {
+    display: inline-block;
+    color: #2ecc71;
+    animation: wave-text 1.2s ease-in-out infinite;
+  }
+  .wave-word span:nth-child(1) { animation-delay: 0s; }
+  .wave-word span:nth-child(2) { animation-delay: .08s; }
+  .wave-word span:nth-child(3) { animation-delay: .16s; }
+  .wave-word span:nth-child(4) { animation-delay: .24s; }
+  .wave-word span:nth-child(5) { animation-delay: .32s; }
+  .wave-word span:nth-child(6) { animation-delay: .40s; }
+
+  /* Soulignement animé */
+  .underline-anim {
+    position: relative; display: inline-block;
+  }
+  .underline-anim::after {
+    content: '';
+    position: absolute; left: 0; bottom: -4px;
+    width: 100%; height: 3px;
+    background: linear-gradient(90deg, #2ecc71, #1a4fa0);
+    border-radius: 2px;
+    transform: scaleX(0); transform-origin: left;
+    animation: scaleIn .7s 1s ease both;
+  }
+
+  .hero-text p {
+    font-size: 1rem; color: #555; line-height: 1.75;
+    margin-bottom: 36px; max-width: 460px;
+    animation: fadeInLeft .7s .3s ease both;
+  }
+  .hero-cta {
+    display: flex; gap: 14px; flex-wrap: wrap;
+    animation: fadeInLeft .7s .45s ease both;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #1a4fa0, #2ecc71);
+    background-size: 200% 200%;
+    color: white; padding: 13px 28px; border-radius: 10px;
+    font-weight: 700; font-size: .95rem; text-decoration: none;
+    border: none; cursor: pointer;
+    transition: transform .2s, box-shadow .2s;
+    animation: gradient-shift 3s ease infinite;
+    position: relative; overflow: hidden;
+  }
+  .btn-primary::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: rgba(255,255,255,0);
+    transition: background .2s;
+  }
+  .btn-primary:hover {
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 28px rgba(26,79,160,.4);
+  }
+  .btn-secondary {
+    background: transparent; color: #1a4fa0;
+    padding: 13px 28px; border-radius: 10px;
+    font-weight: 600; font-size: .95rem;
+    text-decoration: none; border: 2px solid #1a4fa0;
+    transition: all .2s;
+  }
+  .btn-secondary:hover {
+    background: #1a4fa0; color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(26,79,160,.3);
+  }
+
+  /* ── Hero visual ── */
+  .hero-visual-wrap {
+    flex: 1; max-width: 520px; position: relative; z-index: 1;
+    animation: fadeInRight .7s .2s ease both;
+  }
+  .hero-visual {
+    width: 100%; height: 380px;
+    background: linear-gradient(135deg, #e8f5e9 0%, #e3f2fd 100%);
+    border-radius: 24px;
+    box-shadow: 0 24px 64px rgba(0,0,0,.13);
+    position: relative; overflow: hidden;
+    animation: floatSlow 6s ease-in-out infinite;
+  }
+
+  /* Grille de points décoratifs */
+  .dot-grid {
+    position: absolute; top: 16px; right: 16px;
+    display: grid; grid-template-columns: repeat(5,1fr); gap: 8px;
+    opacity: .25;
+  }
+  .dot-grid span {
+    width: 5px; height: 5px;
+    background: #1a4fa0; border-radius: 50%;
+    display: block;
+  }
+
+  /* Cartes flottantes dans le visuel */
+  .v-card {
+    position: absolute;
+    background: white;
+    border-radius: 14px;
+    padding: 14px 18px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.1);
+    font-size: .8rem; font-weight: 600; color: #1a1a2e;
+    display: flex; align-items: center; gap: 10px;
+    animation: float 4s ease-in-out infinite;
+  }
+  .v-card-score {
+    top: 30px; left: 24px;
+    animation-delay: 0s;
+    animation: card-appear .6s .5s ease both, float 5s .5s ease-in-out infinite;
+  }
+  .v-card-match {
+    bottom: 36px; right: 20px;
+    animation: card-appear .6s .8s ease both, float 4.5s .8s ease-in-out infinite;
+  }
+  .v-card-users {
+    top: 50%; left: 50%; transform: translate(-50%,-50%);
+    flex-direction: column; text-align: center;
+    animation: card-appear .6s .6s ease both, float 6s .6s ease-in-out infinite;
+  }
+  .score-num {
+    font-family: 'Sora', sans-serif;
+    font-size: 2.2rem; font-weight: 800;
+    background: linear-gradient(135deg, #1a4fa0, #2ecc71);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    display: block;
+  }
+  .score-lbl { font-size: .7rem; color: #888; }
+  .progress-bar {
+    width: 130px; height: 6px;
+    background: #eee; border-radius: 99px;
+    margin-top: 8px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2ecc71, #1a4fa0);
+    border-radius: 99px; width: 0;
+    animation: progress-grow 1.5s 1.2s ease both;
+  }
+  @keyframes progress-grow { from { width:0; } to { width: 87%; } }
+
+  .live-dot {
+    width: 9px; height: 9px;
+    background: #2ecc71; border-radius: 50%;
+    position: relative; flex-shrink: 0;
+  }
+  .live-dot::after {
+    content: '';
+    position: absolute; inset: -4px;
+    background: rgba(46,204,113,.3);
+    border-radius: 50%;
+    animation: ripple 1.4s ease-out infinite;
+  }
+
+  .avatar-row { display: flex; }
+  .mini-av {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 2px solid white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .65rem; font-weight: 800; color: white;
+    margin-left: -8px;
+  }
+  .mini-av:first-child { margin-left: 0; }
+
+  /* ════════════════════════════════
+     TICKER (bandeau défilant)
+  ════════════════════════════════ */
+  .ticker {
+    background: #1a4fa0;
+    color: white;
+    padding: 12px 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .ticker-track {
+    display: inline-block;
+    animation: ticker-scroll 20s linear infinite;
+    font-size: .85rem; font-weight: 600; letter-spacing: .05em;
+  }
+  .ticker-track span { margin: 0 40px; opacity: .85; }
+  .ticker-track span.dot-sep {
+    width: 5px; height: 5px;
+    background: #2ecc71; border-radius: 50%;
+    display: inline-block; margin: 0 16px;
+    vertical-align: middle;
+  }
+  @keyframes ticker-scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* ════════════════════════════════
+     STATS
+  ════════════════════════════════ */
+  .stats {
+    background: #fff;
+    padding: 52px 60px;
+    display: flex; align-items: center;
+    justify-content: center;
+    gap: 0; flex-wrap: wrap;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+  }
+  .stat-item {
+    text-align: center; flex: 1; min-width: 140px;
+    padding: 20px;
+    position: relative;
+    transition: transform .2s;
+  }
+  .stat-item:hover { transform: translateY(-4px); }
+  .stat-item + .stat-item::before {
+    content: '';
+    position: absolute; left: 0; top: 20%; bottom: 20%;
+    width: 1px; background: #eee;
+  }
+  .stat-num {
+    font-family: 'Sora', sans-serif;
+    font-size: 2.6rem; font-weight: 800;
+    background: linear-gradient(135deg, #1a4fa0, #2ecc71);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    display: block; line-height: 1;
+    opacity: 0; transform: translateY(12px);
+    transition: opacity .6s, transform .6s;
+  }
+  .stat-item.visible .stat-num { opacity: 1; transform: translateY(0); }
+  .stat-item:nth-child(1) .stat-num { transition-delay: 0s; }
+  .stat-item:nth-child(2) .stat-num { transition-delay: .12s; }
+  .stat-item:nth-child(3) .stat-num { transition-delay: .24s; }
+  .stat-item:nth-child(4) .stat-num { transition-delay: .36s; }
+  .stat-lbl { font-size: .82rem; color: #888; margin-top: 6px; font-weight: 500; }
+
+  /* ════════════════════════════════
+     MENTORS SECTION
+  ════════════════════════════════ */
+  .mentors-section {
+    padding: 80px 60px;
+    background: #f8f9ff;
+  }
+  .section-header { text-align: center; margin-bottom: 48px; }
+  .section-header h2 {
+    font-family: 'Sora', sans-serif;
+    font-size: 1.8rem; font-weight: 800; color: #1a1a2e; margin-bottom: 8px;
+  }
+  .section-header p { color: #777; font-size: .95rem; }
+  .mentors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px; max-width: 1000px; margin: 0 auto;
+  }
+  .mentor-card {
+    background: white;
+    border: 1px solid #eaecf5;
+    border-radius: 16px;
+    padding: 24px 20px;
+    text-align: center;
+    opacity: 0; transform: translateY(28px);
+    transition: opacity .5s, transform .5s, border-color .2s, box-shadow .2s;
+  }
+  .mentor-card.visible { opacity: 1; transform: translateY(0); }
+  .mentor-card:nth-child(1) { transition-delay: 0s; }
+  .mentor-card:nth-child(2) { transition-delay: .1s; }
+  .mentor-card:nth-child(3) { transition-delay: .2s; }
+  .mentor-card:nth-child(4) { transition-delay: .3s; }
+  .mentor-card:hover {
+    border-color: #2ecc71;
+    box-shadow: 0 10px 36px rgba(46,204,113,.15);
+    transform: translateY(-6px) !important;
+  }
+  .mentor-avatar {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1a4fa0, #2ecc71);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Sora', sans-serif; font-weight: 800; font-size: 1.3rem;
+    color: white; margin: 0 auto 14px;
+    position: relative;
+  }
+  .mentor-avatar .online-ring {
+    position: absolute; inset: -3px;
+    border: 3px solid #2ecc71;
+    border-radius: 50%;
+    animation: spin-slow 4s linear infinite;
+    border-top-color: transparent;
+  }
+  .mentor-name { font-weight: 700; font-size: .95rem; color: #1a1a2e; margin-bottom: 4px; }
+  .mentor-field {
+    font-size: .75rem; color: white;
+    background: #1a4fa0; border-radius: 99px;
+    padding: 3px 10px; display: inline-block; margin-bottom: 10px;
+  }
+  .mentor-skills { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
+  .skill-tag {
+    font-size: .7rem; background: #f0faf5; color: #1a9e5c;
+    border: 1px solid #c3e6d2; border-radius: 6px; padding: 2px 8px;
+  }
+  .no-mentors {
+    text-align: center; color: #aaa;
+    font-size: .9rem; padding: 40px; grid-column: 1/-1;
+  }
+
+  /* ════════════════════════════════
+     FEATURES
+  ════════════════════════════════ */
+  .features { padding: 80px 60px; background: #fff; }
+  .features-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+    gap: 24px; max-width: 1000px; margin: 0 auto;
+  }
+  .feature-card {
+    background: #f8f9ff; border: 1px solid #eaecf5;
+    border-radius: 14px; padding: 28px 24px;
+    opacity: 0; transform: translateY(24px);
+    transition: opacity .5s, transform .5s, border-color .25s, box-shadow .25s;
+  }
+  .feature-card.visible { opacity: 1; transform: translateY(0); }
+  .feature-card:nth-child(1) { transition-delay: 0s; }
+  .feature-card:nth-child(2) { transition-delay: .1s; }
+  .feature-card:nth-child(3) { transition-delay: .2s; }
+  .feature-card:nth-child(4) { transition-delay: .3s; }
+  .feature-card:hover {
+    border-color: #2ecc71;
+    transform: translateY(-6px) !important;
+    box-shadow: 0 12px 36px rgba(46,204,113,.12);
+  }
+  .feature-icon-box {
+    width: 46px; height: 46px;
+    background: #e8f5e9; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 16px;
+    transition: background .2s, transform .2s;
+  }
+  .feature-card:hover .feature-icon-box {
+    background: #2ecc71; transform: scale(1.12) rotate(-6deg);
+  }
+  .feature-icon-box svg {
+    width: 22px; height: 22px;
+    stroke: #2ecc71; fill: none; stroke-width: 2;
+    transition: stroke .2s;
+  }
+  .feature-card:hover .feature-icon-box svg { stroke: white; }
+  .feature-card h4 {
+    font-family: 'Sora', sans-serif; font-weight: 700;
+    font-size: .95rem; color: #1a1a2e; margin-bottom: 8px;
+  }
+  .feature-card p { font-size: .83rem; color: #666; line-height: 1.6; margin: 0; }
+
+  /* ════════════════════════════════
+     CTA BAND
+  ════════════════════════════════ */
+  .cta-band {
+    background: linear-gradient(135deg, #1a4fa0 0%, #0d3070 100%);
+    padding: 64px 60px; text-align: center; position: relative; overflow: hidden;
+  }
+  .cta-band::before {
+    content: '';
+    position: absolute; top: -50%; left: -20%;
+    width: 600px; height: 600px;
+    background: rgba(46,204,113,.1);
+    border-radius: 50%;
+    animation: blob 10s ease-in-out infinite;
+  }
+  .cta-band h2 {
+    font-family: 'Sora', sans-serif;
+    font-size: 2rem; font-weight: 800; color: white;
+    margin-bottom: 12px; position: relative; z-index: 1;
+    animation: fadeInUp .7s ease both;
+  }
+  .cta-band p {
+    color: rgba(255,255,255,.75); font-size: .95rem;
+    margin-bottom: 28px; position: relative; z-index: 1;
+    animation: fadeInUp .7s .15s ease both;
+  }
+  .cta-band .btn-cta {
+    background: #2ecc71; color: white;
+    padding: 14px 36px; border-radius: 10px;
+    font-weight: 700; font-size: 1rem;
+    text-decoration: none; display: inline-block;
+    transition: background .2s, transform .2s, box-shadow .2s;
+    position: relative; z-index: 1;
+    animation: fadeInUp .7s .3s ease both;
+  }
+  .cta-band .btn-cta:hover {
+    background: #27ae60; color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 28px rgba(46,204,113,.5);
+  }
+
+  /* ════════════════════════════════
+     FOOTER
+  ════════════════════════════════ */
+  .landing-footer {
+    background: #0d1a2e; color: #667;
+    text-align: center; padding: 28px 40px; font-size: .82rem;
+  }
+  .landing-footer span { color: #2ecc71; }
+
+  /* ════════════════════════════════
+     AGENT VOCAL
+  ════════════════════════════════ */
+  .vocal-agent {
+    position: fixed; bottom: 28px; right: 28px; z-index: 9999;
+  }
+  .vocal-btn {
+    width: 58px; height: 58px;
+    background: linear-gradient(135deg, #1a4fa0, #2ecc71);
+    border-radius: 50%; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 24px rgba(26,79,160,.4);
+    transition: transform .2s, box-shadow .2s;
+    position: relative;
+  }
+  .vocal-btn:hover { transform: scale(1.1); box-shadow: 0 10px 32px rgba(26,79,160,.5); }
+  .vocal-btn svg { width: 26px; height: 26px; stroke: white; fill: none; stroke-width: 2; }
+  .vocal-ripple {
+    position: absolute; inset: -8px;
+    border: 2px solid rgba(46,204,113,.5);
+    border-radius: 50%;
+    animation: ripple 2s ease-out infinite;
+  }
+  .vocal-bubble {
+    position: absolute; bottom: 70px; right: 0;
+    background: white; border: 1px solid #eee;
+    border-radius: 14px 14px 0 14px;
+    padding: 12px 16px; min-width: 220px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.12);
+    font-size: .82rem; color: #333; line-height: 1.5;
+    display: none;
+  }
+  .vocal-bubble.show { display: block; animation: fadeInRight .3s ease; }
+  .vocal-bubble strong { color: #1a4fa0; display: block; margin-bottom: 4px; }
+
+  /* Barres audio animées */
+  .audio-bars {
+    display: flex; align-items: flex-end; gap: 3px;
+    height: 20px; margin-top: 8px;
+    display: none;
+  }
+  .audio-bars.playing { display: flex; }
+  .audio-bars span {
+    width: 4px; background: #2ecc71; border-radius: 2px;
+    animation: bar-bounce .8s ease-in-out infinite;
+  }
+  .audio-bars span:nth-child(1) { height: 8px;  animation-delay: 0s; }
+  .audio-bars span:nth-child(2) { height: 14px; animation-delay: .1s; }
+  .audio-bars span:nth-child(3) { height: 20px; animation-delay: .2s; }
+  .audio-bars span:nth-child(4) { height: 14px; animation-delay: .3s; }
+  .audio-bars span:nth-child(5) { height: 8px;  animation-delay: .4s; }
+  @keyframes bar-bounce {
+    0%, 100% { transform: scaleY(.4); }
+    50%       { transform: scaleY(1); }
+  }
+
+  @media (max-width: 900px) {
+    .hero { flex-direction: column; padding: 48px 24px; min-height: auto; }
+    .nav { padding: 14px 20px; }
+    .nav-links { display: none; }
+    .features, .mentors-section { padding: 48px 20px; }
+    .stats { padding: 36px 20px; gap: 0; }
+    .cta-band { padding: 48px 24px; }
+    .orbit-container { display: none; }
+  }
+</style>
+
+<div class="landing">
+
+  <!-- Navbar -->
+  <nav class="nav">
+    <a href="#" class="nav-logo">
+      <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="MentorLink IFRI">
+    </a>
+    <div class="nav-links">
+      <a href="#">Accueil</a>
+      <a href="#mentors">Mentors</a>
+      <a href="#features">Fonctionnalites</a>
+    </div>
+    <div class="nav-actions">
+      <a href="{{ url_for('auth.login') }}" class="btn-nav-login">Connexion</a>
+      <a href="{{ url_for('auth.register') }}" class="btn-nav-register">S'inscrire</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="blob-1"></div>
+    <div class="blob-2"></div>
+    <div class="blob-3"></div>
+    <div class="orbit-container">
+      <div class="orbit-ring"></div>
+      <div class="orbit-ring-2"></div>
+      <div class="orbit-dot"></div>
+      <div class="orbit-dot-2"></div>
+      <div class="orbit-dot-3"></div>
+    </div>
+
+    <div class="hero-text">
+      <div class="hero-tag">
+        <span class="tag-dot"></span>
+        Plateforme de mentorat IFRI
+      </div>
+      <h1>
+        Trouve ton
+        <span class="underline-anim">
+          <span class="wave-word">
+            <span>m</span><span>e</span><span>n</span><span>t</span><span>o</span><span>r</span>
+          </span>
+        </span>.<br>
+        Deviens celui qui inspire.
+      </h1>
+      <p>La plateforme de mentorat academique et professionnel de l'IFRI. Connecte-toi avec des pairs de ta filiere pour progresser ensemble.</p>
+      <div class="hero-cta">
+        <a href="{{ url_for('auth.register') }}" class="btn-primary">Je cherche un mentor</a>
+        <a href="{{ url_for('auth.register') }}" class="btn-secondary">Je deviens mentor</a>
+      </div>
+    </div>
+
+    <div class="hero-visual-wrap">
+      <div class="hero-visual">
+        <!-- Grille de points -->
+        <div class="dot-grid">
+          {% for i in range(25) %}<span></span>{% endfor %}
+        </div>
+
+        <!-- Score card -->
+        <div class="v-card v-card-score">
+          <div>
+            <span class="score-num">87%</span>
+            <span class="score-lbl">Score de compatibilite</span>
+            <div class="progress-bar"><div class="progress-fill"></div></div>
+          </div>
+        </div>
+
+        <!-- Users card -->
+        <div class="v-card v-card-users">
+          <div class="avatar-row">
+            <div class="mini-av" style="background:#1a4fa0;">K</div>
+            <div class="mini-av" style="background:#2ecc71;">A</div>
+            <div class="mini-av" style="background:#e74c3c;">M</div>
+            <div class="mini-av" style="background:#f39c12;">S</div>
+          </div>
+          <span style="font-size:.78rem;color:#555;margin-top:6px;">{{ nb_users }} etudiants inscrits</span>
+        </div>
+
+        <!-- Match card -->
+        <div class="v-card v-card-match">
+          <div class="live-dot"></div>
+          <span>Nouveau match trouve !</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Ticker défilant -->
+  <div class="ticker">
+    <div class="ticker-track">
+      <span>Mentorat academique</span><span class="dot-sep"></span>
+      <span>Intelligence Artificielle</span><span class="dot-sep"></span>
+      <span>Genie Logiciel</span><span class="dot-sep"></span>
+      <span>Systemes d'Information</span><span class="dot-sep"></span>
+      <span>Ingenierie Mathematique</span><span class="dot-sep"></span>
+      <span>Systemes Embarques</span><span class="dot-sep"></span>
+      <span>IFRI — UAC Benin</span><span class="dot-sep"></span>
+      <span>Mentorat academique</span><span class="dot-sep"></span>
+      <span>Intelligence Artificielle</span><span class="dot-sep"></span>
+      <span>Genie Logiciel</span><span class="dot-sep"></span>
+      <span>Systemes d'Information</span><span class="dot-sep"></span>
+      <span>Ingenierie Mathematique</span><span class="dot-sep"></span>
+      <span>Systemes Embarques</span><span class="dot-sep"></span>
+      <span>IFRI — UAC Benin</span><span class="dot-sep"></span>
+    </div>
+  </div>
+
+  <!-- Stats réelles -->
+  <div class="stats" id="stats-section">
+    <div class="stat-item">
+      <span class="stat-num" data-target="{{ nb_users }}">0</span>
+      <div class="stat-lbl">Etudiants inscrits</div>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num" data-target="{{ nb_mentors }}">0</span>
+      <div class="stat-lbl">Mentors actifs</div>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num" data-target="{{ nb_sessions }}">0</span>
+      <div class="stat-lbl">Sessions de mentorat</div>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num" data-target="{{ nb_filieres }}">0</span>
+      <div class="stat-lbl">Filieres couvertes</div>
+    </div>
+  </div>
+
+  <!-- Mentors enregistrés -->
+  <section class="mentors-section" id="mentors">
+    <div class="section-header">
+      <h2>Mentors disponibles</h2>
+      <p>Tous les mentors enregistres sur la plateforme</p>
+    </div>
+    <div class="mentors-grid" id="mentors-grid">
+      {% if mentors %}
+        {% for mentor in mentors %}
+          <div class="mentor-card">
+            <div class="mentor-avatar">
+              <div class="online-ring"></div>
+              {{ mentor.first_name[0] }}{{ mentor.last_name[0] }}
+            </div>
+            <div class="mentor-name">{{ mentor.first_name }} {{ mentor.last_name }}</div>
+            <div class="mentor-field">{{ mentor.field.code if mentor.field else 'IFRI' }} — {{ mentor.study_level }}</div>
+            <div class="mentor-skills">
+              {% for s in mentor.get_strengths()[:3] %}
+                <span class="skill-tag">{{ s.name }}</span>
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="no-mentors">
+          Aucun mentor inscrit pour l'instant.<br>
+          <a href="{{ url_for('auth.register') }}" style="color:#1a4fa0;font-weight:600;">Sois le premier mentor !</a>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features" id="features">
+    <div class="section-header">
+      <h2>Tout ce dont tu as besoin</h2>
+      <p>Une plateforme complete pour le mentorat etudiant</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon-box">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        </div>
+        <h4>Profil complet</h4>
+        <p>Competences, disponibilites, filiere et niveau pour un matching precis.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-box">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <h4>Matching intelligent</h4>
+        <p>Algorithme de compatibilite base sur les competences et les horaires.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-box">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        </div>
+        <h4>Messagerie temps reel</h4>
+        <p>Chat integre avec notifications instantanees.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-box">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        </div>
+        <h4>Annonces ciblees</h4>
+        <p>Publie ou consulte des offres et demandes de mentorat.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-band">
+    <h2>Pret a progresser ensemble ?</h2>
+    <p>Rejoins la communaute de mentorat de l'IFRI des aujourd'hui.</p>
+    <a href="{{ url_for('auth.register') }}" class="btn-cta">Creer mon compte gratuitement</a>
+  </div>
+
+  <footer class="landing-footer">
+    &copy; 2025-2026 <span>IFRI MentorLink</span> — Universite d'Abomey-Calavi — Projet integrateur PIL1
+  </footer>
+</div>
+
+<!-- Agent vocal fixe -->
+<div class="vocal-agent" id="vocal-agent">
+  <div class="vocal-bubble" id="vocal-bubble">
+    <strong>Agent MentorLink</strong>
+    Bienvenue sur IFRI MentorLink ! Trouve ton mentor ideal ou partage tes competences avec tes pairs.
+    <div class="audio-bars" id="audio-bars">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+  </div>
+  <button class="vocal-btn" id="vocal-btn" title="Agent vocal">
+    <div class="vocal-ripple"></div>
+    <svg viewBox="0 0 24 24" id="mic-icon">
+      <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
+      <path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/>
+    </svg>
+  </button>
+</div>
+
+<script>
+/* ── Intersection Observer : stats, features, mentors ── */
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('.feature-card, .mentor-card, .stat-item')
+        .forEach(el => observer.observe(el));
+
+/* ── Compteur animé ── */
+const counterObs = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+    entry.target.querySelectorAll('.stat-num[data-target]').forEach(el => {
+      const target = +el.dataset.target;
+      if (target === 0) { el.textContent = '0'; return; }
+      let cur = 0;
+      const step = Math.max(1, Math.ceil(target / 50));
+      const iv = setInterval(() => {
+        cur = Math.min(cur + step, target);
+        el.textContent = cur + (cur === target && target >= 100 ? '+' : '');
+        if (cur >= target) clearInterval(iv);
+      }, 28);
+    });
+    counterObs.unobserve(entry.target);
+  });
+}, { threshold: 0.3 });
+counterObs.observe(document.getElementById('stats-section'));
+
+/* ── Agent vocal ── */
+const vBtn   = document.getElementById('vocal-btn');
+const vBubble = document.getElementById('vocal-bubble');
+const audioBars = document.getElementById('audio-bars');
+const micIcon = document.getElementById('mic-icon');
+let speaking = false;
+let utterance = null;
+
+const welcomeMsg = "Bienvenue sur IFRI MentorLink ! Ici tu peux trouver un mentor dans ta filiere, ou partager tes competences avec tes camarades. Inscris-toi pour commencer.";
+
+function speak() {
+  if (!window.speechSynthesis) return;
+  if (speaking) {
+    window.speechSynthesis.cancel();
+    speaking = false;
+    audioBars.classList.remove('playing');
+    vBubble.classList.remove('show');
+    return;
+  }
+  vBubble.classList.add('show');
+  audioBars.classList.add('playing');
+  speaking = true;
+
+  utterance = new SpeechSynthesisUtterance(welcomeMsg);
+  utterance.lang = 'fr-FR';
+  utterance.rate = 0.92;
+  utterance.pitch = 1.05;
+  utterance.onend = () => {
+    speaking = false;
+    audioBars.classList.remove('playing');
+  };
+  window.speechSynthesis.speak(utterance);
+}
+
+// Lecture automatique au premier chargement
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    vBubble.classList.add('show');
+    speak();
+  }, 1800);
+});
+
+vBtn.addEventListener('click', speak);
+</script>
+
+{% endblock %}

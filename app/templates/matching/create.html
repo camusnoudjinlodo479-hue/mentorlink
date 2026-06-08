@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}Publier une annonce — MentorLink{% endblock %}
+{% block page_title %}Publier une annonce{% endblock %}
+
+{% block content %}
+<div style="max-width:680px;margin:0 auto;">
+  <form method="POST">
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header"><div class="card-title"> Informations de l'annonce</div></div>
+
+      <div class="form-group">
+        <label class="form-label">Type d'annonce *</label>
+        <div style="display:flex;gap:12px;">
+          <label style="flex:1;display:flex;align-items:center;gap:10px;padding:14px 16px;
+            background:var(--dark-3);border:2px solid var(--border);border-radius:var(--radius);
+            cursor:pointer;transition:.15s;" id="lbl-offer">
+            <input type="radio" name="request_type" value="offer" style="accent-color:var(--primary);" onchange="selectType('offer')">
+            <div>
+              <div style="font-weight:600;"> Je propose du mentorat</div>
+              <div style="font-size:.78rem;color:var(--text-muted);">Je peux aider d'autres etudiants</div>
+            </div>
+          </label>
+          <label style="flex:1;display:flex;align-items:center;gap:10px;padding:14px 16px;
+            background:var(--dark-3);border:2px solid var(--border);border-radius:var(--radius);
+            cursor:pointer;transition:.15s;" id="lbl-demand">
+            <input type="radio" name="request_type" value="demand" style="accent-color:var(--accent);" onchange="selectType('demand')">
+            <div>
+              <div style="font-weight:600;"> Je cherche un mentor</div>
+              <div style="font-size:.78rem;color:var(--text-muted);">J'ai besoin d'aide dans une matiere</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Titre de l'annonce *</label>
+        <input type="text" name="title" class="form-control"
+               placeholder="Ex: Aide en Python et algorithmique pour L1" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea name="description" class="form-control" rows="4"
+                  placeholder="Decris ce que tu proposes ou ce dont tu as besoin..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Format *</label>
+        <select name="format" class="form-control">
+          <option value="both"> En ligne et presentiel</option>
+          <option value="online"> En ligne uniquement</option>
+          <option value="onsite"> Presentiel uniquement</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Competences -->
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header"><div class="card-title"> Competences / Matieres concernees</div></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;">
+        {% for s in skills %}
+          <label style="display:flex;align-items:center;gap:8px;padding:8px 12px;
+            background:var(--dark-3);border:1px solid var(--border);border-radius:var(--radius);
+            cursor:pointer;font-size:.85rem;transition:.15s;">
+            <input type="checkbox" name="skills" value="{{ s.id }}" style="accent-color:var(--primary);">
+            {{ s.name }}
+          </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Disponibilites -->
+    <div class="card" style="margin-bottom:24px;">
+      <div class="card-header">
+        <div class="card-title"> Disponibilites</div>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="addAvail()">+ Ajouter</button>
+      </div>
+      <div id="avail-container">
+        <div class="avail-row" style="display:flex;gap:10px;align-items:center;margin-bottom:10px;">
+          <select name="avail_day" class="form-control" style="flex:1;">
+            <option value="0">Lundi</option><option value="1">Mardi</option>
+            <option value="2">Mercredi</option><option value="3">Jeudi</option>
+            <option value="4">Vendredi</option><option value="5">Samedi</option>
+            <option value="6">Dimanche</option>
+          </select>
+          <input type="time" name="avail_start" class="form-control" style="flex:1;" value="08:00">
+          <span style="color:var(--text-muted);">→</span>
+          <input type="time" name="avail_end" class="form-control" style="flex:1;" value="12:00">
+          <button type="button" onclick="this.closest('.avail-row').remove()"
+                  class="btn btn-ghost btn-sm" style="color:var(--danger);"></button>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;">
+      <button type="submit" class="btn btn-primary btn-lg"> Publier l'annonce</button>
+      <a href="{{ url_for('matching.index') }}" class="btn btn-secondary btn-lg">Annuler</a>
+    </div>
+  </form>
+</div>
+
+<script>
+function selectType(type) {
+  document.getElementById('lbl-offer').style.borderColor = type === 'offer' ? 'var(--primary)' : 'var(--border)';
+  document.getElementById('lbl-demand').style.borderColor = type === 'demand' ? 'var(--accent)' : 'var(--border)';
+}
+const DAYS = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+function addAvail() {
+  const opts = DAYS.map((d,i) => `<option value="${i}">${d}</option>`).join('');
+  const div = document.createElement('div');
+  div.className = 'avail-row';
+  div.style.cssText = 'display:flex;gap:10px;align-items:center;margin-bottom:10px;';
+  div.innerHTML = `
+    <select name="avail_day" class="form-control" style="flex:1;">${opts}</select>
+    <input type="time" name="avail_start" class="form-control" style="flex:1;" value="08:00">
+    <span style="color:var(--text-muted);">→</span>
+    <input type="time" name="avail_end" class="form-control" style="flex:1;" value="12:00">
+    <button type="button" onclick="this.closest('.avail-row').remove()"
+            class="btn btn-ghost btn-sm" style="color:var(--danger);"></button>
+  `;
+  document.getElementById('avail-container').appendChild(div);
+}
+</script>
+{% endblock %}

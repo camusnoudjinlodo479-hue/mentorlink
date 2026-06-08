@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}Modifier mon profil — MentorLink{% endblock %}
+{% block page_title %}Modifier mon profil{% endblock %}
+
+{% block content %}
+<div style="max-width:760px;margin:0 auto;">
+  <form method="POST" enctype="multipart/form-data">
+
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header"><div class="card-title"> Informations personnelles</div></div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Prenom</label>
+          <input type="text" name="first_name" class="form-control" value="{{ user.first_name }}" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nom</label>
+          <input type="text" name="last_name" class="form-control" value="{{ user.last_name }}" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Biographie courte</label>
+        <textarea name="bio" class="form-control" rows="3" placeholder="Quelques mots sur toi...">{{ user.bio or '' }}</textarea>
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Filiere</label>
+          <select name="field_id" class="form-control">
+            <option value="">—</option>
+            {% for f in fields %}
+              <option value="{{ f.id }}" {% if user.field_id == f.id %}selected{% endif %}>
+                {{ f.code }} — {{ f.label }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Niveau</label>
+          <select name="study_level" class="form-control">
+            {% for lvl in ['L1','L2','L3','M1','M2'] %}
+              <option value="{{ lvl }}" {% if user.study_level == lvl %}selected{% endif %}>{{ lvl }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Photo de profil</label>
+        <input type="file" name="photo" class="form-control" accept="image/*">
+        {% if user.photo_url %}
+          <div style="margin-top:8px;font-size:.8rem;color:var(--text-muted);">Photo actuelle : {{ user.photo_url }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Competences -->
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header"><div class="card-title"> Competences</div></div>
+
+      <div style="margin-bottom:20px;">
+        <div style="font-weight:600;color:var(--primary);margin-bottom:10px;"> Points forts</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;">
+          {% for s in skills %}
+            <label style="display:flex;align-items:center;gap:8px;padding:8px 12px;
+              background:var(--dark-3);border:1px solid {% if s.id in cur_strengths %}var(--primary){% else %}var(--border){% endif %};
+              border-radius:var(--radius);cursor:pointer;font-size:.85rem;transition:.15s;">
+              <input type="checkbox" name="strengths" value="{{ s.id }}"
+                     {% if s.id in cur_strengths %}checked{% endif %}
+                     style="accent-color:var(--primary);">
+              {{ s.name }}
+            </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div>
+        <div style="font-weight:600;color:var(--danger);margin-bottom:10px;"> Points faibles</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;">
+          {% for s in skills %}
+            <label style="display:flex;align-items:center;gap:8px;padding:8px 12px;
+              background:var(--dark-3);border:1px solid {% if s.id in cur_weaknesses %}var(--danger){% else %}var(--border){% endif %};
+              border-radius:var(--radius);cursor:pointer;font-size:.85rem;transition:.15s;">
+              <input type="checkbox" name="weaknesses" value="{{ s.id }}"
+                     {% if s.id in cur_weaknesses %}checked{% endif %}
+                     style="accent-color:var(--danger);">
+              {{ s.name }}
+            </label>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Disponibilites -->
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header">
+        <div class="card-title"> Disponibilites</div>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="addAvail()">+ Ajouter</button>
+      </div>
+      <div id="avail-container">
+        {% for a in user.availabilities %}
+          <div class="avail-row" style="display:flex;gap:10px;align-items:center;margin-bottom:10px;">
+            <select name="avail_day" class="form-control" style="flex:1;">
+              {% for day in ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'] %}
+                <option value="{{ loop.index0 }}" {% if a.day_of_week == loop.index0 %}selected{% endif %}>{{ day }}</option>
+              {% endfor %}
+            </select>
+            <input type="time" name="avail_start" class="form-control" style="flex:1;"
+                   value="{{ a.start_time.strftime('%H:%M') }}">
+            <span style="color:var(--text-muted);">→</span>
+            <input type="time" name="avail_end" class="form-control" style="flex:1;"
+                   value="{{ a.end_time.strftime('%H:%M') }}">
+            <button type="button" onclick="this.closest('.avail-row').remove()"
+                    class="btn btn-ghost btn-sm" style="color:var(--danger);"></button>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;">
+      <button type="submit" class="btn btn-primary"> Enregistrer les modifications</button>
+      <a href="{{ url_for('profile.view', user_id=current_user.id) }}" class="btn btn-secondary">Annuler</a>
+    </div>
+  </form>
+</div>
+
+<script>
+const DAYS = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+function addAvail() {
+  const opts = DAYS.map((d,i) => `<option value="${i}">${d}</option>`).join('');
+  const div = document.createElement('div');
+  div.className = 'avail-row';
+  div.style.cssText = 'display:flex;gap:10px;align-items:center;margin-bottom:10px;';
+  div.innerHTML = `
+    <select name="avail_day" class="form-control" style="flex:1;">${opts}</select>
+    <input type="time" name="avail_start" class="form-control" style="flex:1;" value="08:00">
+    <span style="color:var(--text-muted);">→</span>
+    <input type="time" name="avail_end" class="form-control" style="flex:1;" value="12:00">
+    <button type="button" onclick="this.closest('.avail-row').remove()"
+            class="btn btn-ghost btn-sm" style="color:var(--danger);"></button>
+  `;
+  document.getElementById('avail-container').appendChild(div);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}{{ mr.title }} — MentorLink{% endblock %}
+{% block page_title %}Detail de l'annonce{% endblock %}
+
+{% block content %}
+<div style="max-width:700px;margin:0 auto;">
+  <div class="card" style="margin-bottom:20px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+      <span class="badge {% if mr.request_type == 'offer' %}badge-primary{% else %}badge-accent{% endif %}" style="font-size:.85rem;padding:6px 14px;">
+        {{ ' Offre de mentorat' if mr.request_type == 'offer' else ' Demande de mentorat' }}
+      </span>
+      <span class="badge badge-neutral">
+        {% if mr.format == 'online' %} En ligne{% elif mr.format == 'onsite' %} Presentiel{% else %} Les deux{% endif %}
+      </span>
+      <span class="badge {% if mr.status == 'open' %}badge-primary{% else %}badge-neutral{% endif %}">
+        {{ {'open':'Ouvert','matched':'Matchee','closed':'Fermee'}[mr.status] }}
+      </span>
+    </div>
+
+    <h1 style="font-size:1.4rem;font-weight:700;margin-bottom:12px;">{{ mr.title }}</h1>
+
+    {% if mr.description %}
+      <p style="color:var(--text-secondary);line-height:1.7;margin-bottom:16px;">{{ mr.description }}</p>
+    {% endif %}
+
+    {% if mr.skills %}
+      <div style="margin-bottom:16px;">
+        <div style="font-size:.8rem;font-weight:600;color:var(--text-muted);margin-bottom:8px;">COMPETENCES / MATIERES</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          {% for s in mr.skills %}
+            <span class="badge badge-primary">{{ s.name }}</span>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    {% if mr.availabilities %}
+      <div style="margin-bottom:20px;">
+        <div style="font-size:.8rem;font-weight:600;color:var(--text-muted);margin-bottom:8px;">DISPONIBILITES</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          {% for a in mr.availabilities %}
+            <span class="badge badge-neutral">
+              {{ ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'][a.day_of_week] }}
+              {{ a.start_time.strftime('%H:%M') }}–{{ a.end_time.strftime('%H:%M') }}
+            </span>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    <hr style="border-color:var(--border);margin-bottom:16px;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="avatar-circle" style="width:42px;height:42px;font-size:.9rem;overflow:hidden;">
+        {% if mr.author.photo_url %}
+          <img src="{{ mr.author.photo_url }}" style="width:100%;height:100%;object-fit:cover;">
+        {% else %}
+          {{ mr.author.first_name[0] }}{{ mr.author.last_name[0] }}
+        {% endif %}
+      </div>
+      <div>
+        <div style="font-weight:600;">{{ mr.author.full_name }}</div>
+        <div style="font-size:.78rem;color:var(--text-muted);">
+          {{ mr.author.field.label if mr.author.field else '—' }} · {{ mr.author.study_level }}
+          &nbsp;·&nbsp; Publie le {{ mr.created_at.strftime('%d/%m/%Y') }}
+        </div>
+      </div>
+      {% if mr.author_id != current_user.id %}
+        <div style="margin-left:auto;display:flex;gap:8px;">
+          <a href="{{ url_for('profile.view', user_id=mr.author_id) }}" class="btn btn-secondary btn-sm"> Profil</a>
+          <a href="{{ url_for('messaging.open_conversation', other_id=mr.author_id) }}" class="btn btn-primary btn-sm"> Contacter</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+  <a href="{{ url_for('matching.index') }}" class="btn btn-ghost">← Retour aux annonces</a>
+</div>
+{% endblock %}

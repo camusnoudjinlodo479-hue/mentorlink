@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Resultats de matching — MentorLink{% endblock %}
+{% block page_title %}Mentors recommandes{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;">
+  <div>
+    <h2 style="font-size:1.3rem;font-weight:700;"> Mentors recommandes pour toi</h2>
+    <p style="color:var(--text-secondary);font-size:.875rem;margin-top:4px;">
+      Base sur tes competences, disponibilites et filiere
+    </p>
+  </div>
+  <a href="{{ request.url }}" class="btn btn-secondary"> Recalculer</a>
+</div>
+
+{% if results %}
+  <div style="display:grid;gap:16px;">
+    {% for match in results %}
+      {% set mentor = match.mentor %}
+      <div class="card" style="display:flex;align-items:center;gap:20px;transition:border-color .2s;"
+           onmouseenter="this.style.borderColor='var(--primary)'"
+           onmouseleave="this.style.borderColor='var(--border)'">
+
+        <!-- Rang -->
+        <div style="font-family:'Sora',sans-serif;font-size:1.4rem;font-weight:800;
+          color:{% if loop.index == 1 %}#ffd700{% elif loop.index == 2 %}#c0c0c0{% elif loop.index == 3 %}#cd7f32{% else %}var(--text-muted){% endif %};
+          min-width:30px;text-align:center;">
+          {% if loop.index <= 3 %}{{ ['','',''][loop.index-1] }}{% else %}#{{ loop.index }}{% endif %}
+        </div>
+
+        <!-- Avatar -->
+        <div class="avatar-circle" style="width:56px;height:56px;font-size:1.1rem;flex-shrink:0;overflow:hidden;">
+          {% if mentor.photo_url %}
+            <img src="{{ mentor.photo_url }}" alt="{{ mentor.full_name }}" style="width:100%;height:100%;object-fit:cover;">
+          {% else %}
+            {{ mentor.first_name[0] }}{{ mentor.last_name[0] }}
+          {% endif %}
+        </div>
+
+        <!-- Infos -->
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+            <a href="{{ url_for('profile.view', user_id=mentor.id) }}"
+               style="font-size:1rem;font-weight:700;color:var(--text-primary);">{{ mentor.full_name }}</a>
+            {% if mentor.field %}
+              <span class="badge badge-primary">{{ mentor.field.code }}</span>
+            {% endif %}
+            <span class="badge badge-neutral">{{ mentor.study_level }}</span>
+            {% if match.status == 'accepted' %}
+              <span class="badge badge-primary"> Accepte</span>
+            {% elif match.status == 'rejected' %}
+              <span class="badge badge-danger"> Refuse</span>
+            {% endif %}
+          </div>
+          {% if mentor.bio %}
+            <p style="font-size:.8rem;color:var(--text-secondary);margin-bottom:6px;
+              white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:400px;">
+              {{ mentor.bio }}
+            </p>
+          {% endif %}
+          <!-- Scores detailles -->
+          <div style="display:flex;gap:16px;flex-wrap:wrap;">
+            <div style="font-size:.75rem;">
+              <span style="color:var(--text-muted);">Competences</span>
+              <div class="score-bar" style="width:80px;margin-top:2px;">
+                <div class="score-bar-fill" style="width:{{ match.skill_score }}%;background:var(--primary);"></div>
+              </div>
+              <span style="color:var(--primary);font-weight:600;">{{ match.skill_score }}%</span>
+            </div>
+            <div style="font-size:.75rem;">
+              <span style="color:var(--text-muted);">Horaires</span>
+              <div class="score-bar" style="width:80px;margin-top:2px;">
+                <div class="score-bar-fill" style="width:{{ match.schedule_score }}%;background:var(--accent);"></div>
+              </div>
+              <span style="color:var(--accent);font-weight:600;">{{ match.schedule_score }}%</span>
+            </div>
+            <div style="font-size:.75rem;">
+              <span style="color:var(--text-muted);">Filiere</span>
+              <div class="score-bar" style="width:80px;margin-top:2px;">
+                <div class="score-bar-fill" style="width:{{ match.field_score }}%;background:var(--warning);"></div>
+              </div>
+              <span style="color:var(--warning);font-weight:600;">{{ match.field_score }}%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Score global & actions -->
+        <div style="text-align:center;flex-shrink:0;">
+          <div style="font-family:'Sora',sans-serif;font-size:2rem;font-weight:800;
+            color:{% if match.score >= 70 %}var(--primary){% elif match.score >= 40 %}var(--warning){% else %}var(--danger){% endif %};">
+            {{ match.score }}
+          </div>
+          <div style="font-size:.7rem;color:var(--text-muted);margin-bottom:10px;">score / 100</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <a href="{{ url_for('messaging.open_conversation', other_id=mentor.id) }}"
+               class="btn btn-primary btn-sm"> Contacter</a>
+            {% if match.status == 'pending' %}
+              <form method="POST" action="{{ url_for('matching.respond_match', match_id=match.id) }}" style="display:flex;gap:4px;">
+                <button name="action" value="accepted" class="btn btn-ghost btn-sm" style="flex:1;color:var(--primary);"></button>
+                <button name="action" value="rejected" class="btn btn-ghost btn-sm" style="flex:1;color:var(--danger);"></button>
+              </form>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="empty-state">
+    <div class="icon"></div>
+    <p>Aucun mentor trouve. Complete ton profil avec tes points faibles pour obtenir des suggestions.</p>
+    <a href="{{ url_for('profile.edit') }}" class="btn btn-primary">Completer mon profil</a>
+  </div>
+{% endif %}
+{% endblock %}

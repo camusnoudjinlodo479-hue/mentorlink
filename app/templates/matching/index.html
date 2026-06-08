@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Annonces de mentorat — MentorLink{% endblock %}
+{% block page_title %}Annonces de mentorat{% endblock %}
+
+{% block content %}
+<!-- Filtres -->
+<div class="card" style="margin-bottom:24px;">
+  <form method="GET" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+    <div class="form-group" style="flex:1;min-width:180px;margin-bottom:0;">
+      <label class="form-label">Recherche</label>
+      <input type="text" name="q" class="form-control" placeholder="Titre de l'annonce..." value="{{ q }}">
+    </div>
+    <div class="form-group" style="min-width:150px;margin-bottom:0;">
+      <label class="form-label">Type</label>
+      <select name="type" class="form-control">
+        <option value="">Tous</option>
+        <option value="offer" {% if req_type == 'offer' %}selected{% endif %}> Offres</option>
+        <option value="demand" {% if req_type == 'demand' %}selected{% endif %}> Demandes</option>
+      </select>
+    </div>
+    <div class="form-group" style="min-width:180px;margin-bottom:0;">
+      <label class="form-label">Competence</label>
+      <select name="skill_id" class="form-control">
+        <option value="">Toutes</option>
+        {% for s in skills %}
+          <option value="{{ s.id }}" {% if skill_id and skill_id|int == s.id %}selected{% endif %}>{{ s.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary"> Filtrer</button>
+    <a href="{{ url_for('matching.index') }}" class="btn btn-ghost">Reinitialiser</a>
+    <a href="{{ url_for('matching.create') }}" class="btn btn-accent" style="margin-left:auto;">+ Publier</a>
+  </form>
+</div>
+
+{% if requests %}
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;">
+    {% for r in requests %}
+      <div class="card" style="transition:transform .2s,border-color .2s;" onmouseenter="this.style.borderColor='var(--primary)';this.style.transform='translateY(-2px)'" onmouseleave="this.style.borderColor='var(--border)';this.style.transform=''">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <div class="avatar-circle" style="width:40px;height:40px;font-size:.85rem;flex-shrink:0;">
+            {{ r.author.first_name[0] }}{{ r.author.last_name[0] }}
+          </div>
+          <div>
+            <div style="font-size:.85rem;font-weight:600;">{{ r.author.full_name }}</div>
+            <div style="font-size:.72rem;color:var(--text-muted);">{{ r.author.field.code if r.author.field else '—' }} · {{ r.author.study_level }}</div>
+          </div>
+          <span class="badge {% if r.request_type == 'offer' %}badge-primary{% else %}badge-accent{% endif %}" style="margin-left:auto;">
+            {{ ' Offre' if r.request_type == 'offer' else ' Demande' }}
+          </span>
+        </div>
+        <h3 style="font-size:1rem;font-weight:600;margin-bottom:8px;">{{ r.title }}</h3>
+        {% if r.description %}
+          <p style="font-size:.82rem;color:var(--text-secondary);margin-bottom:10px;
+            display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+            {{ r.description }}
+          </p>
+        {% endif %}
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;">
+          {% for s in r.skills[:4] %}
+            <span class="badge badge-neutral" style="font-size:.72rem;">{{ s.name }}</span>
+          {% endfor %}
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <span class="badge badge-neutral">
+            {% if r.format == 'online' %} En ligne{% elif r.format == 'onsite' %} Presentiel{% else %} Les deux{% endif %}
+          </span>
+          <div style="display:flex;gap:6px;">
+            <a href="{{ url_for('matching.view_request', request_id=r.id) }}" class="btn btn-secondary btn-sm">Voir</a>
+            {% if r.author_id != current_user.id %}
+              <a href="{{ url_for('messaging.open_conversation', other_id=r.author_id) }}" class="btn btn-primary btn-sm"> Contacter</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="empty-state">
+    <div class="icon"></div>
+    <p>Aucune annonce ne correspond a vos criteres.</p>
+    <a href="{{ url_for('matching.create') }}" class="btn btn-primary">Publier la premiere annonce</a>
+  </div>
+{% endif %}
+{% endblock %}

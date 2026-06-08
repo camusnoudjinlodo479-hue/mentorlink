@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+{% block title %}{{ other.full_name }} — Messages{% endblock %}
+{% block page_title %}{{ other.full_name }}{% endblock %}
+{% block content_class %}p-0{% endblock %}
+
+{% block content %}
+<style>
+  /* ── Responsive chat ── */
+  .chat-layout {
+    display: flex;
+    height: calc(100vh - 60px);
+    margin: -28px;
+    overflow: hidden;
+  }
+  .chat-list {
+    width: 280px;
+    border-right: 1px solid var(--border);
+    flex-shrink: 0;
+    overflow-y: auto;
+    background: var(--dark-2);
+  }
+  .chat-messages {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .chat-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px;
+    background: var(--dark-2);
+    flex-shrink: 0;
+  }
+  .messages-area {
+    flex: 1;
+    padding: 20px 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .message-bubble {
+    max-width: 70%;
+    padding: 10px 14px;
+    border-radius: 18px;
+    font-size: .875rem;
+    line-height: 1.5;
+    word-break: break-word;
+  }
+  .message-bubble.mine {
+    align-self: flex-end;
+    background: var(--primary);
+    color: white;
+    border-bottom-right-radius: 4px;
+  }
+  .message-bubble.theirs {
+    align-self: flex-start;
+    background: var(--dark-4);
+    color: var(--text-primary);
+    border-bottom-left-radius: 4px;
+  }
+  .message-time {
+    font-size: .68rem;
+    opacity: .65;
+    margin-top: 4px;
+    text-align: right;
+  }
+  .message-input-area {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    display: flex; gap: 10px;
+    background: var(--dark-2);
+    flex-shrink: 0;
+  }
+  .message-input-area .form-control {
+    border-radius: 24px;
+    flex: 1;
+    font-size: .9rem;
+    padding: 10px 18px;
+  }
+  .send-btn {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--primary);
+    border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: background .2s, transform .15s;
+  }
+  .send-btn:hover { background: var(--primary-dark); transform: scale(1.05); }
+  .send-btn svg { width: 18px; height: 18px; stroke: white; fill: none; stroke-width: 2.5; }
+
+  /* Mobile : masquer la sidebar chat */
+  @media (max-width: 700px) {
+    .chat-list { display: none; }
+    .messages-area { padding: 14px 10px; }
+    .message-bubble { max-width: 85%; }
+  }
+</style>
+
+<div class="chat-layout">
+
+  <!-- Sidebar conversations -->
+  <div class="chat-list">
+    <div style="padding:14px 16px;border-bottom:1px solid var(--border);font-weight:600;font-size:.88rem;">
+      Conversations
+    </div>
+    <div style="padding:16px;text-align:center;">
+      <a href="{{ url_for('messaging.index') }}" class="btn btn-ghost btn-sm"
+         style="width:100%;justify-content:center;">
+        &larr; Toutes les conversations
+      </a>
+    </div>
+  </div>
+
+  <!-- Zone principale -->
+  <div class="chat-messages">
+
+    <!-- Header -->
+    <div class="chat-header">
+      <a href="{{ url_for('messaging.index') }}"
+         class="btn btn-ghost btn-sm"
+         style="display:none;" id="back-btn">&larr;</a>
+      <div class="avatar-circle"
+           style="width:38px;height:38px;font-size:.82rem;overflow:hidden;flex-shrink:0;">
+        {% if other.photo_url %}
+          <img src="{{ other.photo_url }}"
+               style="width:100%;height:100%;object-fit:cover;">
+        {% else %}
+          {{ other.first_name[0] }}{{ other.last_name[0] }}
+        {% endif %}
+      </div>
+      <div style="flex:1;">
+        <div style="font-weight:600;font-size:.95rem;">{{ other.full_name }}</div>
+        <div style="font-size:.72rem;color:var(--text-muted);">
+          {{ other.field.code if other.field else '' }} {{ other.study_level }}
+        </div>
+      </div>
+      <a href="{{ url_for('profile.view', user_id=other.id) }}"
+         class="btn btn-secondary btn-sm">Profil</a>
+    </div>
+
+    <!-- Messages -->
+    <div class="messages-area" id="messages-area">
+      {% if messages %}
+        {% for msg in messages %}
+          <div class="message-bubble {% if msg.sender_id == current_user.id %}mine{% else %}theirs{% endif %}"
+               data-id="{{ msg.id }}">
+            {{ msg.content }}
+            <div class="message-time">{{ msg.sent_at.strftime('%H:%M') }}</div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div id="empty-msg"
+             style="text-align:center;color:var(--text-muted);font-size:.85rem;margin:auto;">
+          Debut de la conversation avec {{ other.full_name }}<br>
+          <span style="font-size:.75rem;opacity:.7;">Dis bonjour !</span>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Input -->
+    <div class="message-input-area">
+      <input type="text" id="msg-input" class="form-control"
+             placeholder="Ecris un message..." autocomplete="off">
+      <button class="send-btn" id="send-btn" title="Envoyer">
+        <svg viewBox="0 0 24 24">
+          <line x1="22" y1="2" x2="11" y2="13"/>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+const CONV_ID = {{ conversation.id }};
+const MY_ID   = {{ current_user.id }};
+
+/* Scroll en bas */
+function scrollBottom() {
+  const area = document.getElementById('messages-area');
+  area.scrollTop = area.scrollHeight;
+}
+scrollBottom();
+
+/* Affichage back btn sur mobile */
+if (window.innerWidth <= 700) {
+  document.getElementById('back-btn').style.display = 'flex';
+}
+
+/* ── Socket.IO ── */
+const socket = io();
+socket.emit('join', { conv_id: CONV_ID });
+
+/* Réception : afficher SEULEMENT les messages des autres
+   Les miens sont déjà affichés en optimistic */
+socket.on('new_message', data => {
+  if (data.sender_id === MY_ID) return; // ignorer mes propres messages (déjà affichés)
+  const empty = document.getElementById('empty-msg');
+  if (empty) empty.remove();
+  appendMessage(data.content, false, data.time, data.msg_id);
+  scrollBottom();
+});
+
+function appendMessage(content, isMine, time, id) {
+  const area = document.getElementById('messages-area');
+  const div  = document.createElement('div');
+  div.className = 'message-bubble ' + (isMine ? 'mine' : 'theirs');
+  if (id) div.dataset.id = id;
+  div.innerHTML = content +
+    '<div class="message-time">' + time + '</div>';
+  area.appendChild(div);
+}
+
+/* ── Envoi ── */
+let sending = false;  // verrou anti-doublon
+
+function sendMessage() {
+  if (sending) return;
+  const input   = document.getElementById('msg-input');
+  const content = input.value.trim();
+  if (!content) return;
+
+  sending = true;
+  input.value = '';
+
+  /* Affichage immédiat côté envoyeur (optimistic) */
+  const empty = document.getElementById('empty-msg');
+  if (empty) empty.remove();
+  const now = new Date().toLocaleTimeString('fr-FR',
+    { hour: '2-digit', minute: '2-digit' });
+  appendMessage(content, true, now, null);
+  scrollBottom();
+
+  /* Emit socket — le serveur broadcast aux AUTRES seulement */
+  socket.emit('send_message', { conv_id: CONV_ID, content });
+
+  /* Libérer le verrou après un court délai */
+  setTimeout(() => { sending = false; }, 300);
+}
+
+document.getElementById('send-btn').addEventListener('click', sendMessage);
+document.getElementById('msg-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+</script>
+{% endblock %}

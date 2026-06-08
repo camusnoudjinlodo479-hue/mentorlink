@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Tableau de bord — MentorLink{% endblock %}
+{% block page_title %}Tableau de bord{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:28px;">
+  <h1 style="font-size:1.6rem;font-weight:700;">Bonjour, {{ current_user.first_name }} </h1>
+  <p style="color:var(--text-secondary);margin-top:4px;">Voici un apercu de ton activite de mentorat.</p>
+</div>
+
+<!-- Stats -->
+<div class="grid-4" style="margin-bottom:28px;">
+  <div class="stat-card">
+    <div class="stat-icon green"></div>
+    <div>
+      <div class="stat-value">{{ my_matches|length }}</div>
+      <div class="stat-label">Matchs trouves</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon purple"></div>
+    <div>
+      <div class="stat-value">{{ recent_requests|length }}</div>
+      <div class="stat-label">Annonces recentes</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon orange"></div>
+    <div>
+      <div class="stat-value">{{ unread_messages }}</div>
+      <div class="stat-label">Messages non lus</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon yellow"></div>
+    <div>
+      <div class="stat-value">{{ notifications|length }}</div>
+      <div class="stat-label">Notifications</div>
+    </div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <!-- Matchs recents -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"> Mes meilleurs matchs</div>
+      <a href="{{ url_for('matching.find_mentors') }}" class="btn btn-primary btn-sm">Voir tout</a>
+    </div>
+    {% if my_matches %}
+      {% for m in my_matches[:4] %}
+        {% set other = m.mentor if m.mentee_id == current_user.id else m.mentee %}
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">
+          <div class="avatar-circle" style="width:38px;height:38px;font-size:.85rem;">
+            {{ other.first_name[0] }}{{ other.last_name[0] }}
+          </div>
+          <div style="flex:1;">
+            <div style="font-weight:600;font-size:.9rem;">{{ other.full_name }}</div>
+            <div style="font-size:.75rem;color:var(--text-muted);">
+              {{ other.field.code if other.field else '—' }} · {{ other.study_level }}
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-family:'Sora',sans-serif;font-weight:700;color:var(--primary);">{{ m.score }}%</div>
+            <div class="score-bar" style="width:70px;margin-top:4px;">
+              <div class="score-bar-fill" style="width:{{ m.score }}%;"></div>
+            </div>
+          </div>
+          <a href="{{ url_for('messaging.open_conversation', other_id=other.id) }}" class="btn btn-ghost btn-sm"></a>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state" style="padding:30px 0;">
+        <div class="icon"></div>
+        <p>Aucun match pour l'instant.</p>
+        <a href="{{ url_for('matching.find_mentors') }}" class="btn btn-primary btn-sm">Trouver des mentors</a>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Annonces recentes -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"> Annonces recentes</div>
+      <a href="{{ url_for('matching.index') }}" class="btn btn-secondary btn-sm">Voir tout</a>
+    </div>
+    {% if recent_requests %}
+      {% for r in recent_requests %}
+        <div style="padding:10px 0;border-bottom:1px solid var(--border);">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <span class="badge {% if r.request_type == 'offer' %}badge-primary{% else %}badge-accent{% endif %}">
+              {{ ' Offre' if r.request_type == 'offer' else ' Demande' }}
+            </span>
+            <span style="font-size:.75rem;color:var(--text-muted);">{{ r.created_at.strftime('%d/%m') }}</span>
+          </div>
+          <div style="font-weight:600;font-size:.9rem;">{{ r.title }}</div>
+          <div style="font-size:.78rem;color:var(--text-secondary);margin-top:2px;">
+            {{ r.author.full_name }}
+            {% for s in r.skills[:3] %}
+              <span class="badge badge-neutral" style="margin-left:4px;">{{ s.name }}</span>
+            {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state" style="padding:30px 0;">
+        <p>Aucune annonce ouverte.</p>
+        <a href="{{ url_for('matching.create') }}" class="btn btn-primary btn-sm">Publier une annonce</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Actions rapides -->
+<div style="margin-top:28px;display:flex;gap:12px;flex-wrap:wrap;">
+  <a href="{{ url_for('matching.find_mentors') }}" class="btn btn-primary"> Trouver un mentor</a>
+  <a href="{{ url_for('matching.create') }}" class="btn btn-secondary"> Publier une annonce</a>
+  <a href="{{ url_for('messaging.index') }}" class="btn btn-secondary"> Messages
+    {% if unread_messages > 0 %}<span class="badge badge-danger">{{ unread_messages }}</span>{% endif %}
+  </a>
+  <a href="{{ url_for('profile.edit') }}" class="btn btn-secondary"> Modifier mon profil</a>
+</div>
+{% endblock %}

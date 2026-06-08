@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Messages — MentorLink{% endblock %}
+{% block page_title %}Messagerie{% endblock %}
+{% block content_class %}p-0{% endblock %}
+
+{% block content %}
+<div class="chat-layout" style="margin:-28px;">
+  <!-- Liste conversations -->
+  <div class="chat-list">
+    <div style="padding:16px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-weight:600;font-size:.9rem;">Conversations</span>
+    </div>
+    {% if conversations %}
+      {% for conv in conversations %}
+        {% set other = conv.other_user(current_user.id) %}
+        {% set last = conv.last_message() %}
+        {% set unread = conv.unread_count(current_user.id) %}
+        <a href="{{ url_for('messaging.open_conversation', other_id=other.id) }}"
+           class="chat-item" style="text-decoration:none;color:inherit;">
+          <div class="avatar-circle" style="width:40px;height:40px;font-size:.85rem;flex-shrink:0;overflow:hidden;">
+            {% if other.photo_url %}
+              <img src="{{ other.photo_url }}" style="width:100%;height:100%;object-fit:cover;">
+            {% else %}
+              {{ other.first_name[0] }}{{ other.last_name[0] }}
+            {% endif %}
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-weight:{% if unread %}700{% else %}500{% endif %};font-size:.875rem;">
+                {{ other.full_name }}
+              </span>
+              {% if last %}
+                <span style="font-size:.7rem;color:var(--text-muted);">{{ last.sent_at.strftime('%H:%M') }}</span>
+              {% endif %}
+            </div>
+            <div style="font-size:.78rem;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+              {% if last %}
+                {% if last.sender_id == current_user.id %}Vous : {% endif %}{{ last.content }}
+              {% else %}
+                Nouvelle conversation
+              {% endif %}
+            </div>
+          </div>
+          {% if unread %}
+            <span class="badge badge-danger">{{ unread }}</span>
+          {% endif %}
+        </a>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state" style="padding:40px 20px;">
+        <div class="icon"></div>
+        <p>Aucune conversation.</p>
+        <a href="{{ url_for('matching.find_mentors') }}" class="btn btn-primary btn-sm">Trouver un mentor</a>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Zone centrale vide -->
+  <div class="chat-messages" style="align-items:center;justify-content:center;display:flex;flex:1;">
+    <div class="empty-state">
+      <div class="icon"></div>
+      <p>Selectionne une conversation ou contacte un mentor.</p>
+      <a href="{{ url_for('matching.find_mentors') }}" class="btn btn-primary">Trouver un mentor</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

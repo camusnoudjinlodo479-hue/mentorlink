@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Mes annonces — MentorLink{% endblock %}
+{% block page_title %}Mes annonces{% endblock %}
+
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+  <h2 style="font-size:1.2rem;font-weight:700;"> Mes annonces publiees</h2>
+  <a href="{{ url_for('matching.create') }}" class="btn btn-primary">+ Nouvelle annonce</a>
+</div>
+
+{% if requests %}
+  <div style="display:grid;gap:14px;">
+    {% for r in requests %}
+      <div class="card" style="display:flex;gap:16px;align-items:center;">
+        <span class="badge {% if r.request_type == 'offer' %}badge-primary{% else %}badge-accent{% endif %}" style="flex-shrink:0;">
+          {{ ' Offre' if r.request_type == 'offer' else ' Demande' }}
+        </span>
+        <div style="flex:1;">
+          <div style="font-weight:600;">{{ r.title }}</div>
+          <div style="font-size:.78rem;color:var(--text-muted);margin-top:3px;">
+            Publie le {{ r.created_at.strftime('%d/%m/%Y a %H:%M') }}
+            &nbsp;·&nbsp;
+            {% for s in r.skills[:3] %}<span class="badge badge-neutral">{{ s.name }}</span> {% endfor %}
+          </div>
+        </div>
+        <span class="badge {% if r.status == 'open' %}badge-primary{% elif r.status == 'matched' %}badge-warning{% else %}badge-neutral{% endif %}">
+          {{ {'open':'Ouvert','matched':'Matchee','closed':'Fermee'}[r.status] }}
+        </span>
+        <a href="{{ url_for('matching.view_request', request_id=r.id) }}" class="btn btn-secondary btn-sm">Voir</a>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="empty-state">
+    <div class="icon"></div>
+    <p>Tu n'as pas encore publie d'annonce.</p>
+    <a href="{{ url_for('matching.create') }}" class="btn btn-primary">Publier une annonce</a>
+  </div>
+{% endif %}
+{% endblock %}
